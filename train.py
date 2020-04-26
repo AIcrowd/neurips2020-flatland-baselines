@@ -58,10 +58,6 @@ def on_episode_end(info):
     episode.custom_metrics["episode_score_normalized"] = episode_score * norm_factor
     episode.custom_metrics["percentage_complete"] = percentage_complete
 
-    print("=" * 50)
-    print(episode.custom_metrics)
-    print("=" * 50)
-
 
 def run(args, parser):
     if args.config_file:
