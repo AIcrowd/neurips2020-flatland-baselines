@@ -3,6 +3,15 @@
 The basic structure of this repository is adopted from [https://github.com/spMohanty/rl-experiments/](https://github.com/spMohanty/rl-experiments/)
 
 ## Installation
+
+Tested with Python 3.6 and 3.7
+
+```
+conda create --name ray-env python=3.7 --yes
+```
+
+You may need to install/update bazel: https://docs.bazel.build/versions/master/install-ubuntu.html
+
 ```
 pip install ray[rllib]
 pip install tensorflow # or tensorflow-gpu
@@ -12,7 +21,7 @@ pip install -r requirements.txt
 ## Usage
 ```
 Training example:
-    python ./train.py -f experiments/flatland_random_sparse_small/global_obs/ppo.yaml
+    python ./train.py -f experiments/flatland_random_sparse_small/global_obs_conv_net/ppo.yaml
 
 Test example:
     python ./rollout.py /tmp/ray/checkpoint_dir/checkpoint-0 --run PPO --no-render
