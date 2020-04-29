@@ -9,6 +9,7 @@ from ray.cluster_utils import Cluster
 from ray.rllib.evaluation import MultiAgentEpisode
 from ray.rllib.utils.framework import try_import_tf, try_import_torch
 from ray.tune import tune, run_experiments
+from ray.tune.logger import TBXLogger
 from ray.tune.resources import resources_to_json
 from ray.tune.tune import _make_scheduler
 
@@ -120,7 +121,7 @@ def run(args, parser):
             exp['config']['callbacks'] = {
                 'on_episode_end': on_episode_end,
             }
-        exp['loggers'] = [WandbLogger]
+        exp['loggers'] = [WandbLogger, TBXLogger]
 
     if args.ray_num_nodes:
         cluster = Cluster()

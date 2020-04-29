@@ -11,7 +11,7 @@ class GlobalObsModel(TFModelV2):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
         self._options = model_config['custom_options']
         self._model = GlobalObsModule(action_space=action_space, architecture=self._options['architecture'],
-                                      name="global_obs_model")
+                                      name="global_obs_model", **self._options['architecture_options'])
 
     def forward(self, input_dict, state, seq_lens):
         obs = preprocess_obs(input_dict['obs'])
@@ -45,15 +45,15 @@ def preprocess_obs(obs) -> tf.Tensor:
 
 
 class GlobalObsModule(tf.Module):
-    def __init__(self, action_space, architecture: str, name=None):
+    def __init__(self, action_space, architecture: str, name=None, **kwargs):
         super().__init__(name=name)
         assert isinstance(action_space, gym.spaces.Discrete), \
             "Currently, only 'gym.spaces.Discrete' action spaces are supported."
         with self.name_scope:
             if architecture == 'nature':
-                self._cnn = NatureCNN(activation_out=True)
+                self._cnn = NatureCNN(activation_out=True, **kwargs)
             elif architecture == 'impala':
-                self._cnn = ImpalaCNN(activation_out=True)
+                self._cnn = ImpalaCNN(activation_out=True, **kwargs)
             else:
                 raise ValueError(f"Invalid architecture: {architecture}.")
             self._logits_layer = tf.keras.layers.Dense(units=action_space.n)
