@@ -2,6 +2,16 @@
 
 📈 [**Results**](https://app.wandb.ai/masterscrat/flatland/reports/Flatland-Baselines--Vmlldzo4OTc5NA) 
 
+Experiments
+---
+
+Experiments consist of one or many RLlib YAML config files alongside a MARKDOWN file containing results, plots and a detailed description of the methodology.
+
+All files are stored in a experiment folder under `experiments/<env-name>/<experiment-name>`.
+
+- [Tree observations w/ fully connected network](experiments/flatland_random_sparse_small/tree_obs_fc_net)
+- [Global observations w/ convnet](experiments/flatland_random_sparse_small/global_obs_conv_net)
+
 Setup
 ---
 
@@ -30,16 +40,6 @@ Test example:
         --config '{"env_config": {"test": true}}' --episodes 1000 --out rollouts.pkl`
 
 Note that -f overrides all other trial-specific command-line options.
-
-## Experiment structure
-
-Experiments consist of one or many RLlib YAML config files alongside a MARKDOWN file containing results, plots and a detailed description of the methodology.
-
-All files are stored in a experiment folder under `experiments/<env-name>/<experiment-name>`.
-
-- [Tree observations w/ fully connected network](master/experiments/flatland_random_sparse_small/tree_obs_fc_net)
-- [Global observations w/ convnet](Global observation convnet experiments)
-
 
 Notes
 ---
