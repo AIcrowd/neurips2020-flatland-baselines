@@ -53,9 +53,9 @@ class FlatlandRllibWrapper(object):
                     if agent != '__all__':
                         if done:
                             self._agents_done.append(agent)
-                        if infos['action_required'][agent] or done:  # filter out agents that need no action
-                            o[agent] = obs[agent]
-                            r[agent] = rewards[agent]
+                        # if infos['action_required'][agent] or done:
+                        o[agent] = obs[agent]
+                        r[agent] = rewards[agent]
                         self._agent_scores[agent] += rewards[agent]
                         self._agent_steps[agent] += 1
                     d[agent] = dones[agent]
