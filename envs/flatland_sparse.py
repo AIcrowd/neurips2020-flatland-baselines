@@ -39,10 +39,16 @@ class FlatlandSparse(MultiAgentEnv):
         schedule_generator = sparse_schedule_generator({float(k): float(v)
                                                         for k, v in self._config['speed_ratio_map'].items()})
 
-        env = RailEnv(width=self._config['width'], height=self._config['height'], rail_generator=rail_generator,
-                      schedule_generator=schedule_generator, number_of_agents=self._config['number_of_agents'],
-                      malfunction_generator_and_process_data=malfunction_from_params(stochastic_data),
-                      obs_builder_object=self._observation.builder(), remove_agents_at_target=False)
+        env = RailEnv(
+            width=self._config['width'],
+            height=self._config['height'],
+            rail_generator=rail_generator,
+            schedule_generator=schedule_generator,
+            number_of_agents=self._config['number_of_agents'],
+            malfunction_generator_and_process_data=malfunction_from_params(stochastic_data),
+            obs_builder_object=self._observation.builder(),
+            remove_agents_at_target=False
+        )
         return env
 
     def step(self, action_dict):

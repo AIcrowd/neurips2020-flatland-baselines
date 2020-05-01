@@ -25,7 +25,9 @@ You may need to install/update bazel: [Ubuntu guide](https://docs.bazel.build/ve
 
 ```
 pip install ray[rllib]
-pip install tensorflow # or tensorflow-gpu
+pip install tensorflow
+# with GPU support
+# conda install -c anaconda tensorflow-gpu 
 pip install -r requirements.txt
 ```
 
