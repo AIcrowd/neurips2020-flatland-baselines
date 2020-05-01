@@ -3,3 +3,5 @@ flatland-rl==2.1.10
 pycairo==1.19.1
 pyhumps==1.3.1
 gputil==1.4.0
+pyhumps==1.3.1
+wandb==0.8.34
