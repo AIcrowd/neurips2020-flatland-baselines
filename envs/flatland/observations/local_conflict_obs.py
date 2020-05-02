@@ -256,7 +256,8 @@ def create_agent_states(obs: Union[Dict, List],
                         max_depth: int, n_local: int = 5) -> Dict:
     """
     Identifies local agent conflicts and adds information from
-    conflict prediction matrix.
+    conflict prediction matrix. For more details refer to the
+    observation section in the README.md file.
     """
     n_agents = len(obs)
     x_dim = 0
@@ -382,6 +383,11 @@ def create_agent_states(obs: Union[Dict, List],
 
 def get_agent_conflict_prediction_matrix(n_agents, max_depth, predicted_pos
                                          ) -> Tuple[List, List, List]:
+    '''
+    Calculates the agent conflict step path and agent conflict count path
+    and the agent total conflict steps
+    For more details refer to the observation section in the README.md file.
+    '''
     agent_total_step_conflicts = []
     agent_conflicts_step_path = []
     agent_conflicts_count_path = []
