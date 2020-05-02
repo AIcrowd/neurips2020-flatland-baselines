@@ -449,3 +449,48 @@ def action_required(agent):
         agent.status == RailAgentStatus.ACTIVE and
         np.isclose(agent.speed_data['position_fraction'], 0.0,
                    rtol=1e-03)))
+
+
+def strategy_action_map(action, observation_shortest,
+                        observation_next_shortest):
+    """
+    convert action space from 0-2 to 0-4
+    observation_shortest and observation_next_shortest represent a
+    3-size vector for the actions L,F and R.
+    If no alternate path exists both of the values would be same
+    E.g. observation_shortest = [0, 1, 0] refers to Forward (F) shortest path
+    observation_next_shortest = [0, 0, 1] refers to taking action
+    Right (R) for an alternate route
+    """
+    if action == 2:
+        return 4
+    elif action == 0:
+
+        return np.argmax(observation_shortest) + 1
+    elif action == 1:
+        return np.argmax(observation_next_shortest) + 1
+
+
+def action_strategy_map(action, observation_shortest,
+                        observation_next_shortest, moving):
+    """
+    convert action space from 0-4 to 0-2 representing shortest path, deviate
+    and stop
+    Refer to the strategy_action_map method for observation arguments
+    """
+    if action == np.argmax(observation_shortest) + 1:
+        return 0
+    elif action == np.argmax(observation_next_shortest) + 1:
+        return 1
+    elif action == 0:
+        if moving:
+            if np.argmax(observation_shortest) == 1:
+                return 0
+            elif np.argmax(observation_shortest) == 1:
+                return 1
+        else:
+            return 2
+    elif action == 4:
+        return 2
+    else:
+        return 0
