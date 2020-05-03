@@ -49,5 +49,5 @@ for file in os.listdir(os.path.dirname(__file__)):
 
         module = importlib.import_module(f'.{file[:-3]}', package=__name__)
         print("-    Successfully Loaded Observation class {} from {}".format(
-            class_name, os.path.basename(basename)
+            class_name, basename
         ))

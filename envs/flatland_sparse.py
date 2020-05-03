@@ -15,22 +15,9 @@ from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
 class FlatlandSparse(MultiAgentEnv):
     def __init__(self, env_config) -> None:
         super().__init__()
-
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
-
-        self._config = env_config
-
-        print("#" * 50)
-        print(self._config)
-        print("#" * 50)
-        print(os.getcwd())
-        loaded_config = {}
         with open(env_config['generator_config']) as f:
-            loaded_config = yaml.safe_load(f)
-        print(loaded_config)
-        self._config = loaded_config
-        print("#" * 50)
-
+            self._config = yaml.safe_load(f)
         self._env = FlatlandRllibWrapper(
             rail_env=self._launch(),
             render=env_config['render'],
