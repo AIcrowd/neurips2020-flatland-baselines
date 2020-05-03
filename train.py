@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 
 import os
-from pathlib import Path
 
 import ray
 import yaml
+from pathlib import Path
 from ray.cluster_utils import Cluster
 from ray.rllib.evaluation import MultiAgentEpisode
 from ray.rllib.utils.framework import try_import_tf, try_import_torch
-from ray.tune import tune, run_experiments
+from ray.tune import run_experiments
 from ray.tune.logger import TBXLogger
 from ray.tune.resources import resources_to_json
 from ray.tune.tune import _make_scheduler
 
 from argparser import create_parser
 from utils.loader import load_envs, load_models
-
 # Custom wandb logger with hotfix to allow custom callbacks
 from wandblogger import WandbLogger
 
