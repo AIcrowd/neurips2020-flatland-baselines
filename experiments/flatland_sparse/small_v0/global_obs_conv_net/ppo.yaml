@@ -33,12 +33,12 @@ flatland-sparse-global-conv-ppo:
                 max_height: 32
 
             generator: sparse_rail_generator
-            generator_config: 32x32_v0
+            generator_config: small_v0
 
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["32x32", "global_obs"]
+                tags: ["small_v0", "global_obs"] # TODO should be set programmatically
 
         model:
             custom_model: global_obs_model

@@ -15,3 +15,5 @@ speed_ratio_map:
     '0.3333333': 0.25
     '0.25': 0.25
 seed: 0
+regenerate_rail_on_reset: True
+regenerate_schedule_on_reset: True

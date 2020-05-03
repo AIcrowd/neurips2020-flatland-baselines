@@ -6,6 +6,11 @@ import yaml
 
 GENERATOR_CONFIG_REGISTRY = {}
 
+
+def get_generator_config(name: str):
+    return GENERATOR_CONFIG_REGISTRY[name]
+
+
 config_folder = os.path.join(os.path.dirname(__file__), "generator_configs")
 for file in os.listdir(config_folder):
     if file.endswith('.yaml') and not file.startswith('_'):

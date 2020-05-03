@@ -1,13 +1,14 @@
-import os
+import logging
+from pprint import pprint
 
 import gym
-import yaml
-from flatland.envs.malfunction_generators import malfunction_from_params
+from flatland.envs.malfunction_generators import malfunction_from_params, no_malfunction_generator
 from flatland.envs.rail_env import RailEnv
 from flatland.envs.rail_generators import sparse_rail_generator
 from flatland.envs.schedule_generators import sparse_schedule_generator
 from ray.rllib import MultiAgentEnv
 
+from envs.flatland import get_generator_config
 from envs.flatland.observations import make_obs
 from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
 
@@ -15,14 +16,23 @@ from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
 class FlatlandSparse(MultiAgentEnv):
     def __init__(self, env_config) -> None:
         super().__init__()
+
+        # TODO implement other generators
+        assert env_config['generator'] == 'sparse_rail_generator'
+
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
-        with open(env_config['generator_config']) as f:
-            self._config = yaml.safe_load(f)
+        self._config = get_generator_config(env_config['generator_config'])
+
+        if env_config.worker_index == 0 and env_config.vector_index == 0:
+            print("=" * 50)
+            pprint(self._config)
+            print("=" * 50)
+
         self._env = FlatlandRllibWrapper(
             rail_env=self._launch(),
-            render=env_config['render'],
-            regenerate_rail_on_reset=env_config['regenerate_rail_on_reset'],
-            regenerate_schedule_on_reset=env_config['regenerate_schedule_on_reset']
+            # render=env_config['render'], # TODO need to fix gl compatibility first
+            regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
+            regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
         )
 
     @property
@@ -42,25 +52,41 @@ class FlatlandSparse(MultiAgentEnv):
             max_rails_in_city=self._config['max_rails_in_city']
         )
 
-        stochastic_data = {
-            'malfunction_rate': self._config['malfunction_rate'],
-            'min_duration': self._config['malfunction_min_duration'],
-            'max_duration': self._config['malfunction_max_duration']
-        }
+        malfunction_generator = no_malfunction_generator()
+        if {'malfunction_rate', 'min_duration', 'max_duration'} <= self._config.keys():
+            stochastic_data = {
+                'malfunction_rate': self._config['malfunction_rate'],
+                'min_duration': self._config['malfunction_min_duration'],
+                'max_duration': self._config['malfunction_max_duration']
+            }
+            malfunction_generator = malfunction_from_params(stochastic_data)
 
-        schedule_generator = sparse_schedule_generator({float(k): float(v)
-                                                        for k, v in self._config['speed_ratio_map'].items()})
+        speed_ratio_map = None
+        if 'speed_ratio_map' in self._config:
+            speed_ratio_map = {
+                float(k): float(v) for k, v in self._config['speed_ratio_map'].items()
+            }
+        schedule_generator = sparse_schedule_generator(speed_ratio_map)
 
-        env = RailEnv(
-            width=self._config['width'],
-            height=self._config['height'],
-            rail_generator=rail_generator,
-            schedule_generator=schedule_generator,
-            number_of_agents=self._config['number_of_agents'],
-            malfunction_generator_and_process_data=malfunction_from_params(stochastic_data),
-            obs_builder_object=self._observation.builder(),
-            remove_agents_at_target=False
-        )
+        env = None
+        try:
+            env = RailEnv(
+                width=self._config['width'],
+                height=self._config['height'],
+                rail_generator=rail_generator,
+                schedule_generator=schedule_generator,
+                number_of_agents=self._config['number_of_agents'],
+                malfunction_generator_and_process_data=malfunction_generator,
+                obs_builder_object=self._observation.builder(),
+                remove_agents_at_target=False
+            )
+
+            env.reset()
+        except ValueError as e:
+            logging.error("=" * 50)
+            logging.error(f"Error while creating env: {e}")
+            logging.error("=" * 50)
+
         return env
 
     def step(self, action_dict):
