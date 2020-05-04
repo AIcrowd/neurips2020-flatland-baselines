@@ -45,7 +45,8 @@ def on_episode_end(info):
         if agent_info["agent_done"]:
             episode_done_agents += 1
 
-    assert len(episode._agent_to_last_info) == episode_num_agents
+    # Not a valid check when considering a single policy for multiple agents
+    #assert len(episode._agent_to_last_info) == episode_num_agents
 
     norm_factor = 1.0 / (episode_max_steps + episode_num_agents)
     percentage_complete = float(episode_done_agents) / episode_num_agents

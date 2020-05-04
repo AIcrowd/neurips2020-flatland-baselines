@@ -73,10 +73,15 @@ class FlatlandSingle(gym.Env):
 
         return env
 
-    def step(self, action_dict):
+    def step(self, action_list):
         # print("="*50)
         # print(action_dict)
-        step_r = self._env.step({0: action_dict})
+
+        action_dict = {}
+        for i, action in enumerate(action_list):
+            action_dict[i] = action
+
+        step_r = self._env.step(action_dict)
         # print(step_r)
         # print("="*50)
 
@@ -95,7 +100,7 @@ class FlatlandSingle(gym.Env):
         # print(foo)
         # print("="*50)
 
-        return [step for step in foo.obs.values()],
+        return [step for step in foo.values()]
         #return foo
 
     @property

@@ -49,7 +49,9 @@ class FlatlandRllibWrapper(object):
             for agent, done in dones.items():
                 if agent != '__all__' and not agent in obs:
                     continue  # skip agent if there is no observation
-                if agent not in self._agents_done:
+                # FIXME the check below should be kept in MARL training
+                #if agent not in self._agents_done:
+                if True or agent not in self._agents_done:
                     if agent != '__all__':
                         if done:
                             self._agents_done.append(agent)
