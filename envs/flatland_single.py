@@ -1,11 +1,11 @@
 import logging
 
-import gym, ray
+import gym
+import numpy as np
 from flatland.envs.malfunction_generators import no_malfunction_generator, malfunction_from_params
 from flatland.envs.rail_env import RailEnv
 from flatland.envs.rail_generators import sparse_rail_generator
 from flatland.envs.schedule_generators import sparse_schedule_generator
-from ray.rllib.agents import ppo
 
 from envs.flatland import get_generator_config
 from envs.flatland.observations import make_obs
@@ -80,7 +80,13 @@ class FlatlandSingle(gym.Env):
         # print(step_r)
         # print("="*50)
 
-        return StepOutput(obs=step_r.obs[0], reward=step_r.reward[0], done=step_r.done[0], info=step_r.info[0])
+        return StepOutput(
+            obs=[step for step in step_r.obs.values()],
+            reward=np.sum([r for r in step_r.reward.values()]),
+            done=all(step_r.done.values()),
+            info=step_r.info[0]
+        )
+        #return step_r
 
     def reset(self):
         foo = self._env.reset()
@@ -89,12 +95,21 @@ class FlatlandSingle(gym.Env):
         # print(foo)
         # print("="*50)
 
-        return foo[0]
+        return [step for step in foo.obs.values()],
+        #return foo
 
     @property
     def observation_space(self) -> gym.spaces.Space:
-        return self._observation.observation_space()
+        observation_space = self._observation.observation_space()
+
+        if isinstance(observation_space, gym.spaces.Box):
+            return gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self._config['number_of_agents'], *observation_space.shape,))
+        elif isinstance(observation_space, gym.spaces.Tuple):
+            spaces = observation_space.spaces * self._config['number_of_agents']
+            return gym.spaces.Tuple(spaces)
+        else:
+            raise ValueError("Unhandled space:", observation_space.__class__)
 
     @property
     def action_space(self) -> gym.spaces.Space:
-        return self._env.action_space
+        return gym.spaces.MultiDiscrete([5] * self._config['number_of_agents'])

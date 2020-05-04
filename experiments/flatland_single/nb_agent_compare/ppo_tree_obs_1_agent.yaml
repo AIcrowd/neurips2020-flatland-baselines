@@ -18,13 +18,13 @@ flatland-random-sparse-small-tree-fc-ppo:
         rollout_fragment_length: 50  # 100
         sgd_minibatch_size: 100  # 500
         num_sgd_iter: 10
-        num_workers: 1
-        num_envs_per_worker: 1
+        num_workers: 5
+        num_envs_per_worker: 5
         batch_mode: truncate_episodes
         observation_filter: NoFilter
         vf_share_layers: True
         vf_loss_coeff: 0.5
-        num_gpus: 0
+        num_gpus: 1
 
         env_config:
             observation: tree
@@ -33,12 +33,12 @@ flatland-random-sparse-small-tree-fc-ppo:
                 shortest_path_max_depth: 30
 
             generator: sparse_rail_generator
-            generator_config: small_v0
+            generator_config: small_single_v0
 
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["small_v0", "tree_obs"] # TODO should be set programmatically
+                tags: ["small_single_v0", "tree_obs"] # TODO should be set programmatically
 
         model:
             fcnet_activation: relu
