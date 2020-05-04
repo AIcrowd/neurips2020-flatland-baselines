@@ -49,6 +49,10 @@ class FlatlandRllibWrapper(object):
             for agent, done in dones.items():
                 if agent != '__all__' and not agent in obs:
                     continue  # skip agent if there is no observation
+
+                # Use this if using a single policy for multiple agents
+                # TODO find better way to handle this
+                #if True or agent not in self._agents_done:
                 if agent not in self._agents_done:
                     if agent != '__all__':
                         if done:

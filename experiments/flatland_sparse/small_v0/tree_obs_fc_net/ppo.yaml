@@ -1,4 +1,4 @@
-flatland-sparse-global-conv-ppo:
+flatland-random-sparse-small-tree-fc-ppo:
     run: PPO
     env: flatland_sparse
     stop:
@@ -18,31 +18,29 @@ flatland-sparse-global-conv-ppo:
         rollout_fragment_length: 50  # 100
         sgd_minibatch_size: 100  # 500
         num_sgd_iter: 10
-        num_workers: 7
+        num_workers: 2
         num_envs_per_worker: 5
         batch_mode: truncate_episodes
         observation_filter: NoFilter
         vf_share_layers: True
         vf_loss_coeff: 0.5
-        num_gpus: 1
+        num_gpus: 0
 
         env_config:
-            observation: global
+            observation: tree
             observation_config:
-                max_width: 32
-                max_height: 32
+                max_depth: 2
+                shortest_path_max_depth: 30
 
             generator: sparse_rail_generator
-            generator_config: 32x32_v0
+            generator_config: small_v0
 
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["32x32", "global_obs"]
+                tags: ["small_v0", "tree_obs"] # TODO should be set programmatically
 
         model:
-            custom_model: global_obs_model
-            custom_options:
-                architecture: impala
-                architecture_options:
-                    residual_layers: [[16, 2], [32, 4]]
+            fcnet_activation: relu
+            fcnet_hiddens: [256, 256]
+            vf_share_layers: True  # False

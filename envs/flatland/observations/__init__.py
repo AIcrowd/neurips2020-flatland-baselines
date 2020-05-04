@@ -3,6 +3,7 @@ import os
 from abc import ABC, abstractmethod
 
 import gym
+import humps
 from flatland.core.env_observation_builder import ObservationBuilder
 
 
@@ -42,4 +43,11 @@ def make_obs(name: str, config, *args, **kwargs) -> Observation:
 # automatically import any Python files in the obs/ directory
 for file in os.listdir(os.path.dirname(__file__)):
     if file.endswith('.py') and not file.startswith('_'):
-        module = importlib.import_module(f'.{file[:-3]}', __name__)
+        basename = os.path.basename(file)
+        filename = basename.replace(".py", "")
+        class_name = humps.pascalize(filename)
+
+        module = importlib.import_module(f'.{file[:-3]}', package=__name__)
+        print("-    Successfully Loaded Observation class {} from {}".format(
+            class_name, basename
+        ))

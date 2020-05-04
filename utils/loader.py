@@ -90,7 +90,7 @@ def load_envs(local_dir="."):
                 ))
         # Finally Register Env in Tune
         registry.register_env(env_name, lambda config: env(config))
-        print("-    Successfully Loaded class {} from {}".format(
+        print("-    Successfully Loaded Environment class {} from {}".format(
             class_name, os.path.basename(_file_path)
         ))
 
@@ -126,6 +126,6 @@ def load_models(local_dir="."):
                 ))
         # Finally Register Model in ModelCatalog
         ModelCatalog.register_custom_model(model_name, CustomModel)
-        print("-    Successfully Loaded custom Model class {} from {}".format(
+        print("-    Successfully Loaded Model class {} from {}".format(
             class_name, os.path.basename(_file_path)
         ))

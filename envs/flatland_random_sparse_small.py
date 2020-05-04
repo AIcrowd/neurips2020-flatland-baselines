@@ -3,9 +3,9 @@ import random
 import gym
 from ray.rllib import MultiAgentEnv
 
-from envs.flatland.env_generators import random_sparse_env_small
+from envs.flatland.utils.env_generators import random_sparse_env_small
 from envs.flatland.observations import make_obs
-from envs.flatland.rllib_wrapper import FlatlandRllibWrapper
+from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
 
 
 class FlatlandRandomSparseSmall(MultiAgentEnv):

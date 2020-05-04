@@ -1,47 +1,30 @@
 import logging
-from pprint import pprint
 
 import gym
-from flatland.envs.malfunction_generators import malfunction_from_params, no_malfunction_generator
+import numpy as np
+from flatland.envs.malfunction_generators import no_malfunction_generator, malfunction_from_params
 from flatland.envs.rail_env import RailEnv
 from flatland.envs.rail_generators import sparse_rail_generator
 from flatland.envs.schedule_generators import sparse_schedule_generator
-from ray.rllib import MultiAgentEnv
 
 from envs.flatland import get_generator_config
 from envs.flatland.observations import make_obs
-from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
+from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper, StepOutput
 
 
-class FlatlandSparse(MultiAgentEnv):
-    def __init__(self, env_config) -> None:
-        super().__init__()
+class FlatlandSingle(gym.Env):
+    def render(self, mode='human'):
+        pass
 
-        # TODO implement other generators
-        assert env_config['generator'] == 'sparse_rail_generator'
-
+    def __init__(self, env_config):
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
         self._config = get_generator_config(env_config['generator_config'])
 
-        if env_config.worker_index == 0 and env_config.vector_index == 0:
-            print("=" * 50)
-            pprint(self._config)
-            print("=" * 50)
-
         self._env = FlatlandRllibWrapper(
             rail_env=self._launch(),
-            # render=env_config['render'], # TODO need to fix gl compatibility first
             regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
             regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
         )
-
-    @property
-    def observation_space(self) -> gym.spaces.Space:
-        return self._observation.observation_space()
-
-    @property
-    def action_space(self) -> gym.spaces.Space:
-        return self._env.action_space
 
     def _launch(self):
         rail_generator = sparse_rail_generator(
@@ -90,8 +73,48 @@ class FlatlandSparse(MultiAgentEnv):
 
         return env
 
-    def step(self, action_dict):
-        return self._env.step(action_dict)
+    def step(self, action_list):
+        # print("="*50)
+        # print(action_dict)
+
+        action_dict = {}
+        for i, action in enumerate(action_list):
+            action_dict[i] = action
+
+        step_r = self._env.step(action_dict)
+        # print(step_r)
+        # print("="*50)
+
+        return StepOutput(
+            obs=[step for step in step_r.obs.values()],
+            reward=np.sum([r for r in step_r.reward.values()]),
+            done=all(step_r.done.values()),
+            info=step_r.info[0]
+        )
+        #return step_r
 
     def reset(self):
-        return self._env.reset()
+        foo = self._env.reset()
+
+        # print("="*50)
+        # print(foo)
+        # print("="*50)
+
+        return [step for step in foo.values()]
+        #return foo
+
+    @property
+    def observation_space(self) -> gym.spaces.Space:
+        observation_space = self._observation.observation_space()
+
+        if isinstance(observation_space, gym.spaces.Box):
+            return gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self._config['number_of_agents'], *observation_space.shape,))
+        elif isinstance(observation_space, gym.spaces.Tuple):
+            spaces = observation_space.spaces * self._config['number_of_agents']
+            return gym.spaces.Tuple(spaces)
+        else:
+            raise ValueError("Unhandled space:", observation_space.__class__)
+
+    @property
+    def action_space(self) -> gym.spaces.Space:
+        return gym.spaces.MultiDiscrete([5] * self._config['number_of_agents'])

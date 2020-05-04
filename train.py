@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 
 import os
-from pathlib import Path
 
 import ray
 import yaml
+from pathlib import Path
 from ray.cluster_utils import Cluster
 from ray.rllib.evaluation import MultiAgentEpisode
 from ray.rllib.utils.framework import try_import_tf, try_import_torch
-from ray.tune import tune, run_experiments
+from ray.tune import run_experiments
 from ray.tune.logger import TBXLogger
 from ray.tune.resources import resources_to_json
 from ray.tune.tune import _make_scheduler
 
 from argparser import create_parser
 from utils.loader import load_envs, load_models
-
 # Custom wandb logger with hotfix to allow custom callbacks
 from wandblogger import WandbLogger
 
@@ -46,7 +45,8 @@ def on_episode_end(info):
         if agent_info["agent_done"]:
             episode_done_agents += 1
 
-    assert len(episode._agent_to_last_info) == episode_num_agents
+    # Not a valid check when considering a single policy for multiple agents
+    #assert len(episode._agent_to_last_info) == episode_num_agents
 
     norm_factor = 1.0 / (episode_max_steps + episode_num_agents)
     percentage_complete = float(episode_done_agents) / episode_num_agents

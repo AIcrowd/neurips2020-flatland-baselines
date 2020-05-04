@@ -15,8 +15,10 @@ class TreeObservation(Observation):
     def __init__(self, config) -> None:
         super().__init__(config)
         self._builder = TreeObsForRailEnvRLLibWrapper(
-            TreeObsForRailEnv(max_depth=config['max_depth'],
-                              predictor=ShortestPathPredictorForRailEnv(config['shortest_path_max_depth']))
+            TreeObsForRailEnv(
+                max_depth=config['max_depth'],
+                predictor=ShortestPathPredictorForRailEnv(config['shortest_path_max_depth'])
+            )
         )
 
     def builder(self) -> ObservationBuilder:
@@ -105,12 +107,11 @@ def _split_node_into_feature_groups(node: TreeObsForRailEnv.Node) -> (np.ndarray
 
 
 def _split_subtree_into_feature_groups(node: TreeObsForRailEnv.Node, current_tree_depth: int, max_tree_depth: int) -> (np.ndarray, np.ndarray, np.ndarray):
-
     if node == -np.inf:
         remaining_depth = max_tree_depth - current_tree_depth
         # reference: https://stackoverflow.com/questions/515214/total-number-of-nodes-in-a-tree-data-structure
-        num_remaining_nodes = int((4**(remaining_depth+1) - 1) / (4 - 1))
-        return [-np.inf] * num_remaining_nodes*6, [-np.inf] * num_remaining_nodes, [-np.inf] * num_remaining_nodes*4
+        num_remaining_nodes = int((4 ** (remaining_depth + 1) - 1) / (4 - 1))
+        return [-np.inf] * num_remaining_nodes * 6, [-np.inf] * num_remaining_nodes, [-np.inf] * num_remaining_nodes * 4
 
     data, distance, agent_data = _split_node_into_feature_groups(node)
 
