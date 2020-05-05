@@ -46,7 +46,7 @@ class MyTreeObsForRailEnv(ObservationBuilder):
     def __init__(self, max_depth: int, predictor: PredictionBuilder = None):
         super().__init__()
         self.max_depth = max_depth
-        self.observation_dim = 11
+        self.observation_dim = 17
         self.location_has_agent = {}
         self.location_has_agent_direction = {}
         self.predictor = predictor

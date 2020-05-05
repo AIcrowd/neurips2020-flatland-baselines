@@ -27,7 +27,7 @@ flatland-random-sparse-small-tree-fc-ppo:
         num_gpus: 0
 
         env_config:
-            observation: tree
+            observation: new_tree
             observation_config:
                 max_depth: 2
                 shortest_path_max_depth: 30
@@ -38,7 +38,7 @@ flatland-random-sparse-small-tree-fc-ppo:
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["small_v0", "tree_obs"] # TODO should be set programmatically
+                tags: ["small_v0", "new_tree_obs"] # TODO should be set programmatically
 
         model:
             fcnet_activation: relu

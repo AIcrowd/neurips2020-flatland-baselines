@@ -24,11 +24,15 @@ class TreeObservation(Observation):
         return self._builder
 
     def observation_space(self) -> gym.Space:
+        # TODO compute properly
+        """
         num_features_per_node = self._builder.observation_dim
         nr_nodes = 0
         for i in range(self.config['max_depth'] + 1):
             nr_nodes += np.power(4, i)
         return gym.spaces.Box(low=-np.inf, high=np.inf, shape=(num_features_per_node * nr_nodes,))
+        """
+        return gym.spaces.Box(low=-np.inf, high=np.inf, shape=(151,))
 
 
 def _split_node_into_feature_groups(node: TreeObsForRailEnv.Node, dist_min_to_target: int) -> (np.ndarray, np.ndarray,
@@ -158,8 +162,14 @@ def normalize_observation(observation: TreeObsForRailEnv.Node, tree_depth: int, 
     # navigate_info_2[navigate_info_2 < 1] = -1
 
     max_v = np.max(navigate_info)
+
+    if max_v == 0:
+        max_v = 1.0
+
     navigate_info = navigate_info / max_v
     navigate_info[navigate_info < 0] = -1
+
+
     # navigate_info[abs(navigate_info) < 1] = 0
     # normalized_obs = navigate_info
 
@@ -167,6 +177,9 @@ def normalize_observation(observation: TreeObsForRailEnv.Node, tree_depth: int, 
     normalized_obs = np.concatenate((navigate_info, normalized_obs))
     # normalized_obs = np.concatenate((navigate_info, navigate_info_2))
     # print(normalized_obs)
+
+    #print(len(normalized_obs))
+
     return normalized_obs
 
 
