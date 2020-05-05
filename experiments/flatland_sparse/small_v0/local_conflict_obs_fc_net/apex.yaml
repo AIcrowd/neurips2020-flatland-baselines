@@ -17,6 +17,7 @@ flatland-random-sparse-small-tree-fc-ppo:
             observation_config:
                 max_depth: 2
                 shortest_path_max_depth: 30
+                n_local: 5
 
             generator: sparse_rail_generator
             generator_config: small_v0
