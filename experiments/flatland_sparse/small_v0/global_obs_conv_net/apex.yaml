@@ -13,7 +13,7 @@ flatland-random-sparse-small-tree-fc-ppo:
         num_gpus: 1
 
         env_config:
-            observation: new_tree
+            observation: global
             observation_config:
                 max_depth: 2
                 shortest_path_max_depth: 30
@@ -24,9 +24,11 @@ flatland-random-sparse-small-tree-fc-ppo:
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["small_v0", "new_tree_obs", "apex"] # TODO should be set programmatically
+                tags: ["small_v0", "global_obs", "apex"] # TODO should be set programmatically
 
         model:
-            fcnet_activation: relu
-            fcnet_hiddens: [256, 256]
-            vf_share_layers: True  # False
+            custom_model: global_obs_model
+                custom_options:
+                    architecture: impala
+                    architecture_options:
+                        residual_layers: [[16, 2], [32, 4]]
