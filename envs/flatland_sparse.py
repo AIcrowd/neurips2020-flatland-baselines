@@ -10,7 +10,8 @@ from ray.rllib import MultiAgentEnv
 
 from envs.flatland import get_generator_config
 from envs.flatland.observations import make_obs
-from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
+from envs.flatland.utils.gym_env import FlatlandGymEnv
+from envs.flatland.utils.gym_env_wrappers import AvailableActionsWrapper, SkipNoChoiceCellsWrapper
 
 
 class FlatlandSparse(MultiAgentEnv):
@@ -28,16 +29,22 @@ class FlatlandSparse(MultiAgentEnv):
             pprint(self._config)
             print("=" * 50)
 
-        self._env = FlatlandRllibWrapper(
+        self._env = FlatlandGymEnv(
             rail_env=self._launch(),
+            observation_space=self._observation.observation_space(),
             # render=env_config['render'], # TODO need to fix gl compatibility first
             regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
             regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
         )
+        if env_config.get('skip_no_choice_cells', False):
+            self._env = SkipNoChoiceCellsWrapper(self._env)
+        if env_config.get('available_actions_obs', False):
+            self._env = AvailableActionsWrapper(self._env)
 
     @property
     def observation_space(self) -> gym.spaces.Space:
-        return self._observation.observation_space()
+        print(self._env.observation_space)
+        return self._env.observation_space
 
     @property
     def action_space(self) -> gym.spaces.Space:

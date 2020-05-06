@@ -5,7 +5,9 @@ from ray.rllib import MultiAgentEnv
 
 from envs.flatland.utils.env_generators import random_sparse_env_small
 from envs.flatland.observations import make_obs
-from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper
+
+from envs.flatland.utils.gym_env import FlatlandGymEnv
+from envs.flatland.utils.gym_env_wrappers import SkipNoChoiceCellsWrapper, AvailableActionsWrapper
 
 
 class FlatlandRandomSparseSmall(MultiAgentEnv):
@@ -22,9 +24,17 @@ class FlatlandRandomSparseSmall(MultiAgentEnv):
         self._next_test_seed = self._min_test_seed
         self._num_resets = 0
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
-        self._env = FlatlandRllibWrapper(rail_env=self._launch(), render=env_config['render'],
-                                         regenerate_rail_on_reset=env_config['regenerate_rail_on_reset'],
-                                         regenerate_schedule_on_reset=env_config['regenerate_schedule_on_reset'])
+        self._env = FlatlandGymEnv(
+            rail_env=self._launch(),
+            observation_space=self._observation.observation_space(),
+            # render=env_config['render'], # TODO need to fix gl compatibility first
+            regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
+            regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
+        )
+        if env_config.get('skip_no_choice_cells', False):
+            self._env = SkipNoChoiceCellsWrapper(self._env)
+        if env_config.get('available_actions_obs', False):
+            self._env = AvailableActionsWrapper(self._env)
 
     @property
     def observation_space(self) -> gym.spaces.Space:

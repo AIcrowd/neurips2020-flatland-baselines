@@ -9,7 +9,9 @@ from flatland.envs.schedule_generators import sparse_schedule_generator
 
 from envs.flatland import get_generator_config
 from envs.flatland.observations import make_obs
-from envs.flatland.utils.rllib_wrapper import FlatlandRllibWrapper, StepOutput
+
+from envs.flatland.utils.gym_env import FlatlandGymEnv, StepOutput
+from envs.flatland.utils.gym_env_wrappers import SkipNoChoiceCellsWrapper, AvailableActionsWrapper
 
 
 class FlatlandSingle(gym.Env):
@@ -19,12 +21,16 @@ class FlatlandSingle(gym.Env):
     def __init__(self, env_config):
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
         self._config = get_generator_config(env_config['generator_config'])
-
-        self._env = FlatlandRllibWrapper(
+        self._env = FlatlandGymEnv(
             rail_env=self._launch(),
+            observation_space=self._observation.observation_space(),
             regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
             regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
         )
+        if env_config.get('skip_no_choice_cells', False):
+            self._env = SkipNoChoiceCellsWrapper(self._env)
+        if env_config.get('available_actions_obs', False):
+            self._env = AvailableActionsWrapper(self._env)
 
     def _launch(self):
         rail_generator = sparse_rail_generator(
