@@ -1,5 +1,4 @@
 import getopt
-import random
 import sys
 import time
 
@@ -21,27 +20,14 @@ from flatland.envs.schedule_generators import schedule_from_file
 
 from flatland.envs.agent_utils import RailAgentStatus
 
-from utils.observation_utils import *
+from utils.observation_utils import normalize_observation  # noqa
 
-import collections
 # from gen_envs import *
 import json
 from ray.rllib.evaluation.sample_batch_builder import SampleBatchBuilder
 from ray.rllib.offline.json_writer import JsonWriter
 
-train_set = True
 imitate = True
-imitate_store = True
-
-if train_set:
-    random_seed = np.random.randint(1000)
-else:
-    random_seed = np.random.randint(1000, 2000)
-
-test_env_no = np.random.randint(9)
-level_no = np.random.randint(2)
-random.seed(random_seed)
-np.random.seed(random_seed)
 
 
 def main(args):
@@ -73,8 +59,6 @@ def main(args):
     n_trials = 97
     start = 0
 
-    dict_expert = collections.defaultdict(list)
-
     columns = ['Agents', 'X_DIM', 'Y_DIM', 'TRIAL_NO',
                'REWARD', 'NORMALIZED_REWARD',
                'DONE_RATIO', 'STEPS', 'ACTION_PROB']
@@ -90,7 +74,8 @@ def main(args):
 
         env_file = f"../env_configs/test-envs-small/Test_0/Level_{trials}.mpk"
 
-        env = RailEnv(width=1, height=1, rail_generator=rail_from_file(env_file),
+        env = RailEnv(width=1, height=1,
+                      rail_generator=rail_from_file(env_file),
                       schedule_generator=schedule_from_file(env_file),
                       malfunction_generator_and_process_data=malfunction_from_file(
                           env_file),
@@ -118,11 +103,10 @@ def main(args):
 
         if imitate:
             agent_action_buffer = list(
-                expert_actions[step].values())  # list(expert_actions[str(trials)][step].values())
+                expert_actions[step].values())
         else:
             # , p=[0.2, 0, 0.5])  # [0] * n_agents
             agent_action_buffer = np.random.choice(5, n_agents, replace=True)
-        cummulated_reward = np.zeros(n_agents)
         update_values = [False] * n_agents
 
         max_steps = int(4 * 2 * (20 + env.height + env.width))
@@ -131,7 +115,6 @@ def main(args):
 
         # And some variables to keep track of the progress
         action_dict = dict()
-        strategy_dict = dict()
         scores_window = deque(maxlen=100)
         reward_window = deque(maxlen=100)
         done_window = deque(maxlen=100)
@@ -143,9 +126,6 @@ def main(args):
             env_renderer = RenderTool(env, gl="PILSVG")
             env_renderer.render_env(
                 show=True, frames=True, show_observations=True)
-
-        if not imitate_store:
-            break
 
         for a in range(n_agents):
             if obs[a]:
@@ -161,30 +141,22 @@ def main(args):
         for step in range(max_steps):
             for a in range(n_agents):
                 if info['action_required'][a]:
-                    strategy = 0  # agent.act(agent_obs[a])[0]
-
                     if imitate:
                         if step < len(expert_actions):
                             action = expert_actions[step][str(a)]
                         else:
                             action = 0
                     else:
-                        action = strategy
+                        action = 0
 
                     action_prob[action] += 1
                     update_values[a] = True
 
                 else:
                     update_values[a] = False
-                    if imitate:
-                        action = 0  # expert_actions[step][str(a)]  # 0
-                        strategy = 0  # expert_actions[step][str(a)]  # 0
-                    else:
-                        action = 0
-                        strategy = 0
+                    action = 0
 
                 action_dict.update({a: action})
-                strategy_dict.update({a: strategy})
 
             next_obs, all_rewards, done, info = env.step(action_dict)
 
@@ -194,21 +166,18 @@ def main(args):
                     agent_obs[a] = normalize_observation(
                         next_obs[a], tree_depth, observation_radius=10)
 
-                # Only update the values when we are done or when an action was taken and thus relevant information is present
+                # Only update the values when we are done or when an action
+                # was taken and thus relevant information is present
                 if update_values[a] or done[a]:
                     start += 1
-
-                    cur_values = [agent_obs_buffer[a], [
-                        agent_action_buffer[a]], all_rewards[a], agent_obs[a], done[a]]
-                    dict_expert[str(trials)].append(cur_values)
 
                     batch_builder.add_values(
                         t=step,
                         eps_id=trials,
                         agent_index=0,
                         obs=agent_obs_buffer[a],
-                        actions=strategy_dict[a],
-                        action_prob=1.0,  # put the true action probability here
+                        actions=action_dict[a],
+                        action_prob=1.0,  # put the true action probability
                         rewards=all_rewards[a],
                         prev_actions=agent_action_buffer[a],
                         prev_rewards=prev_reward[a],
@@ -216,11 +185,9 @@ def main(args):
                         infos=info['action_required'][a],
                         new_obs=agent_obs[a])
 
-                    cummulated_reward[a] = 0.
-
-                    agent_obs_buffer[a] = agent_obs[a].copy()
-                    agent_action_buffer[a] = strategy_dict[a]
-                    prev_reward[a] = all_rewards[a]
+                agent_obs_buffer[a] = agent_obs[a].copy()
+                agent_action_buffer[a] = action_dict[a]
+                prev_reward[a] = all_rewards[a]
 
                 score += all_rewards[a]  # / env.get_num_agents()
 
@@ -230,8 +197,6 @@ def main(args):
                 if sleep_for_animation:
                     time.sleep(0.5)
 
-            # if imitate:
-            #    max_steps = len(expert_actions) - 2
             if done["__all__"] or step > max_steps:
                 writer.write(batch_builder.build_and_reset())
                 break
@@ -248,7 +213,8 @@ def main(args):
                         step,
                         score,
                         score / (max_steps + n_agents),
-                        100 * np.mean(tasks_finished / max(1, env.get_num_agents()))), end=" ")
+                        100 * np.mean(tasks_finished / max(
+                            1, env.get_num_agents()))), end=" ")
 
         tasks_finished = 0
         for current_agent in env.agents:
