@@ -8,7 +8,7 @@ flatland-random-sparse-small-tree-fc-ppo:
     keep_checkpoints_num: 5
     checkpoint_score_attr: episode_reward_mean
     config:
-        num_workers: 9
+        num_workers: 19
         num_envs_per_worker: 5
         num_gpus: 0
 
@@ -19,12 +19,12 @@ flatland-random-sparse-small-tree-fc-ppo:
                 shortest_path_max_depth: 30
 
             generator: sparse_rail_generator
-            generator_config: medium_stoch_v0
+            generator_config: medium_stoch_v1
 
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["medium_stoch_v0", "tree_obs", "apex"] # TODO should be set programmatically
+                tags: ["medium_stoch_v1", "tree_obs", "apex"] # TODO should be set programmatically
 
         model:
             fcnet_activation: relu
