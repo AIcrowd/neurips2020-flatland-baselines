@@ -28,7 +28,7 @@ flatland-random-sparse-small-tree-fc-ppo:
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["small_v0", "tree_obs", "apex"] # TODO should be set programmatically
+                tags: ["small_v0", "tree_obs", "apex_Mixed_IL"] # TODO should be set programmatically
 
         model:
             fcnet_activation: relu

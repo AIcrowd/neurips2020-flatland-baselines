@@ -28,7 +28,7 @@ flatland-random-sparse-small-tree-fc-ppo:
             wandb:
                 project: flatland
                 entity: masterscrat
-                tags: ["small_v0", "tree_obs", "apex"] # TODO should be set programmatically
+                tags: ["small_v0", "tree_obs", "DQN_DQfD"] # TODO should be set programmatically
 
         model:
             custom_model: custom_loss_model
