@@ -8,7 +8,11 @@ We do Imitation Learning in 2 Phases
   * If Phase 1 is skipped this would be a new experiment, else we would restore from a checkpoint point saved from Phase 1
 
 ## Generate and save Experiences from expert actions
-This can be done by running the `saving_experiences.py` file. A saved version of the experiences can also be found in the `ImitationLearning/SaveExperiences` folder.
+This can be done by running the `ImitationLearning/saving_experiences.py` file. 
+
+A saved version of the experiences can also be found in the `ImitationLearning/SaveExperiences` folder. You can copy them to the default input location with:
+
+`cp ImitationLearning/SaveExperiences/*.json /tmp/flatland-out/`
 
 In the config file set the input location as follows
 
