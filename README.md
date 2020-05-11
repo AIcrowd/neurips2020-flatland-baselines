@@ -15,28 +15,35 @@ All files are stored in a experiment folder under `experiments/<env-name>/<exper
 Setup
 ---
 
-Tested with Python 3.6 and 3.7
+Using conda (recommended):
 
 ```
-conda create --name ray-env python=3.7 --yes
+# with GPU support:
+conda env create -f environment-gpu.yml
+
+# or, without GPU support:
+#conda env create -f environment-cpu.yml
+
+conda activate flatland-env
+pip install -r requirements.txt
+```
+
+Using pip:
+
+```
+# no GPU support:
+pip install -r requirements.txt
 ```
 
 You may need to install/update bazel: [Ubuntu guide](https://docs.bazel.build/versions/master/install-ubuntu.html)
 
-```
-pip install ray[rllib]
-pip install tensorflow
-# with GPU support
-# conda install -c anaconda tensorflow-gpu 
-pip install -r requirements.txt
-```
-
 ## Usage
+
 Training example:
 
 `python ./train.py -f experiments/flatland_random_sparse_small/global_obs_conv_net/ppo.yaml`
 
-Test example:
+Evaluation example:
 
 `python ./rollout.py /tmp/ray/checkpoint_dir/checkpoint-0 --run PPO --no-render
         --config '{"env_config": {"test": true}}' --episodes 1000 --out rollouts.pkl`

@@ -23,7 +23,7 @@ class FlatlandSparse(MultiAgentEnv):
         self._observation = make_obs(env_config['observation'], env_config.get('observation_config'))
         self._config = get_generator_config(env_config['generator_config'])
 
-        if env_config.worker_index == 0 and env_config.vector_index == 0:
+        if not hasattr(env_config, 'worker_index') or (env_config.worker_index == 0 and env_config.vector_index == 0):
             print("=" * 50)
             pprint(self._config)
             print("=" * 50)
@@ -53,7 +53,7 @@ class FlatlandSparse(MultiAgentEnv):
         )
 
         malfunction_generator = no_malfunction_generator()
-        if {'malfunction_rate', 'min_duration', 'max_duration'} <= self._config.keys():
+        if {'malfunction_rate', 'malfunction_min_duration', 'malfunction_max_duration'} <= self._config.keys():
             stochastic_data = {
                 'malfunction_rate': self._config['malfunction_rate'],
                 'min_duration': self._config['malfunction_min_duration'],
