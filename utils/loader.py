@@ -8,6 +8,8 @@ import gym
 import humps
 from ray.rllib import MultiAgentEnv
 from ray.rllib.models import ModelCatalog
+from ray.rllib.models import Model
+from ray.rllib.models.modelv2 import ModelV2
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.tune import registry
 
@@ -111,12 +113,15 @@ def load_models(local_dir="."):
             - classname : PascalCase
 
             the class implementation, should be an inheritance
-            of TFModelV2 (TODO : Add PyTorch Model support too)
+            of TFModelV2 (ModelV2 : Added PyTorch Model support too,
+                          Model: Added Custom loss Model support)
         """
         model_name, class_name, _class = load_class_from_file(_file_path)
         CustomModel = _class
         # Validate the class
-        if not issubclass(CustomModel, TFModelV2):
+        if not issubclass(CustomModel, ModelV2) and not\
+                issubclass(CustomModel, TFModelV2) and not\
+                issubclass(CustomModel, Model):
             raise Exception(
                 "We expected the class named {} to be "
                 "a subclass of TFModelV2. "
