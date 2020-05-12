@@ -121,6 +121,9 @@ def run(args, parser):
             exp['config']['callbacks'] = {
                 'on_episode_end': on_episode_end,
             }
+        if args.config_file:
+            # TODO should be in exp['config'] directly
+            exp['config']['env_config']['yaml_config'] = args.config_file
         exp['loggers'] = [WandbLogger, TBXLogger]
 
     if args.ray_num_nodes:

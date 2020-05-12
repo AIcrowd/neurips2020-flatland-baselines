@@ -1,5 +1,6 @@
 import multiprocessing
 import numbers
+from pprint import pprint
 
 import wandb
 from ray import tune
@@ -58,6 +59,7 @@ class WandbLogger(tune.logger.Logger):
         wandb.join()
 
 
+# each logger has to run in a separate process
 def wandb_process(queue, config):
     run = wandb.init(reinit=True, **config.get("env_config", {}).get("wandb", {}))
 
@@ -66,6 +68,11 @@ def wandb_process(queue, config):
             if k != "callbacks":
                 if wandb.config.get(k) is None:
                     wandb.config[k] = config[k]
+
+        if 'yaml_config' in config['env_config']:
+            yaml_config = config['env_config']['yaml_config']
+            print("Saving full experiment config:", yaml_config)
+            wandb.save(yaml_config)
 
     while True:
         metrics = queue.get()
