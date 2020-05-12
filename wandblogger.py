@@ -1,3 +1,4 @@
+import multiprocessing
 import numbers
 
 import wandb
@@ -20,26 +21,52 @@ class WandbLogger(tune.logger.Logger):
 
     def _init(self):
         self._config = None
-        wandb.init(**self.config.get("env_config", {}).get("wandb", {}))
+        self.metrics_queue_dict = {}
 
     def on_result(self, result):
-        config = result.get("config")
-        if config and self._config is None:
-            for k in config.keys():
-                if k != "callbacks":
-                    if wandb.config.get(k) is None:
-                        wandb.config[k] = config[k]
-            self._config = config
+        experiment_tag = result.get('experiment_tag', 'no_experiment_tag')
+        experiment_id = result.get('experiment_id', 'no_experiment_id')
+
+        if experiment_tag not in self.metrics_queue_dict:
+            print("=" * 50)
+            print("Setting up new w&b logger")
+            print("Experiment tag:", experiment_tag)
+            print("Experiment id:", experiment_id)
+            config = result.get("config")
+            queue = multiprocessing.Queue()
+            p = multiprocessing.Process(target=wandb_process, args=(queue, config,))
+            p.start()
+            self.metrics_queue_dict[experiment_tag] = queue
+            print("=" * 50)
+
+        queue = self.metrics_queue_dict[experiment_tag]
+
         tmp = result.copy()
         for k in ["done", "config", "pid", "timestamp"]:
             if k in tmp:
                 del tmp[k]
+
         metrics = {}
         for key, value in flatten_dict(tmp, delimiter="/").items():
             if not isinstance(value, numbers.Number):
                 continue
             metrics[key] = value
-        wandb.log(metrics)
+
+        queue.put(metrics)
 
     def close(self):
         wandb.join()
+
+
+def wandb_process(queue, config):
+    run = wandb.init(reinit=True, **config.get("env_config", {}).get("wandb", {}))
+
+    if config:
+        for k in config.keys():
+            if k != "callbacks":
+                if wandb.config.get(k) is None:
+                    wandb.config[k] = config[k]
+
+    while True:
+        metrics = queue.get()
+        run.log(metrics)
