@@ -28,8 +28,8 @@ class FlatlandRandomSparseSmall(MultiAgentEnv):
             rail_env=self._launch(),
             observation_space=self._observation.observation_space(),
             # render=env_config['render'], # TODO need to fix gl compatibility first
-            regenerate_rail_on_reset=self._config['regenerate_rail_on_reset'],
-            regenerate_schedule_on_reset=self._config['regenerate_schedule_on_reset']
+            regenerate_rail_on_reset=env_config['regenerate_rail_on_reset'],
+            regenerate_schedule_on_reset=env_config['regenerate_schedule_on_reset']
         )
         if env_config.get('skip_no_choice_cells', False):
             self._env = SkipNoChoiceCellsWrapper(self._env)
