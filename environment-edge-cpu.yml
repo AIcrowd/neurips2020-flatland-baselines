@@ -3,7 +3,7 @@ dependencies:
     - python=3.7
     - pip=20.0
     - pip:
-        - git+https://gitlab.aicrowd.com/flatland/flatland.git
+        - git+https://gitlab.aicrowd.com/flatland/flatland.git@master
         - CairoSVG==2.4.2
 #       - pycairo==1.19.1 # fails!
         - pyhumps==1.3.1
