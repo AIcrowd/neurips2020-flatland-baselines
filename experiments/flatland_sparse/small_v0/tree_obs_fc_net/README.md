@@ -12,7 +12,7 @@ This can be done by running the `ImitationLearning/saving_experiences.py` file.
 
 A saved version of the experiences can also be found in the `ImitationLearning/SaveExperiences` folder. You can copy them to the default input location with:
 
-`cp ImitationLearning/SaveExperiences/*.json /tmp/flatland-out/`
+`mkdir /tmp/flatland-out; cp ImitationLearning/SaveExperiences/*.json /tmp/flatland-out/`
 
 In the config file set the input location as follows
 
