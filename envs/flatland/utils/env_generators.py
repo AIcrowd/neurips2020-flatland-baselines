@@ -1,10 +1,13 @@
 import logging
 import random
+from typing import NamedTuple
 
 from flatland.envs.malfunction_generators import malfunction_from_params
 from flatland.envs.rail_env import RailEnv
 from flatland.envs.rail_generators import sparse_rail_generator
 from flatland.envs.schedule_generators import sparse_schedule_generator
+
+MalfunctionParameters = NamedTuple('MalfunctionParameters', [('malfunction_rate', float), ('min_duration', int), ('max_duration', int)])
 
 
 def random_sparse_env_small(random_seed, max_width, max_height, observation_builder):
@@ -24,6 +27,9 @@ def random_sparse_env_small(random_seed, max_width, max_height, observation_buil
                                            max_rails_between_cities=max_rails_between_cities,
                                            max_rails_in_city=max_rails_in_cities)
 
+    # new version:
+    # stochastic_data = MalfunctionParameters(malfunction_rate, malfunction_min_duration, malfunction_max_duration)
+
     stochastic_data = {'malfunction_rate': malfunction_rate, 'min_duration': malfunction_min_duration,
                        'max_duration': malfunction_max_duration}
 
@@ -31,10 +37,17 @@ def random_sparse_env_small(random_seed, max_width, max_height, observation_buil
 
     while width <= max_width and height <= max_height:
         try:
-            return RailEnv(width=width, height=height, rail_generator=rail_generator,
-                           schedule_generator=schedule_generator, number_of_agents=nr_trains,
-                           malfunction_generator_and_process_data=malfunction_from_params(stochastic_data),
-                           obs_builder_object=observation_builder, remove_agents_at_target=False)
+            env = RailEnv(width=width, height=height, rail_generator=rail_generator,
+                          schedule_generator=schedule_generator, number_of_agents=nr_trains,
+                          malfunction_generator_and_process_data=malfunction_from_params(stochastic_data),
+                          obs_builder_object=observation_builder, remove_agents_at_target=False)
+
+            print("[{}] {}x{} {} cities {} trains, max {} rails between cities, max {} rails in cities. Malfunction rate {}, {} to {} steps.".format(
+                random_seed, width, height, nr_cities, nr_trains, max_rails_between_cities,
+                max_rails_in_cities, malfunction_rate, malfunction_min_duration, malfunction_max_duration
+            ))
+
+            return env
         except ValueError as e:
             logging.error(f"Error: {e}")
             width += 5
@@ -42,4 +55,3 @@ def random_sparse_env_small(random_seed, max_width, max_height, observation_buil
             logging.info("Try again with larger env: (w,h):", width, height)
     logging.error(f"Unable to generate env with seed={random_seed}, max_width={max_height}, max_height={max_height}")
     return None
-
