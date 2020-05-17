@@ -17,6 +17,7 @@ from ray.rllib.env import MultiAgentEnv
 from ray.rllib.env.base_env import _DUMMY_AGENT_ID
 from ray.rllib.evaluation.episode import _flatten_action
 from ray.rllib.policy.sample_batch import DEFAULT_POLICY_ID
+#from ray.rllib.utils.space_utils import flatten_to_single_ndarray
 from ray.tune.utils import merge_dicts
 
 from utils.loader import load_envs, load_models
@@ -25,8 +26,15 @@ logger = logging.getLogger(__name__)
 
 EXAMPLE_USAGE = """
 Example Usage:
-    ./rollout.py /tmp/ray/checkpoint_dir/checkpoint-0 --run PPO --no-render
-    --config '{"env_config": {"test": true}}' --episodes 1000 --out rollouts.pkl
+    python rollout.py /Users/flaurent/Sites/flatland/flatland-checkpoints/checkpoint_940/checkpoint-940 --run APEX --no-render --episodes 1000 --env 'flatland_random_sparse_small' --config '{"env_config": {"test": "true", "min_seed": 1002, "max_seed": 213783, "min_test_seed": 0, "max_test_seed": 100, "reset_env_freq": "1", "regenerate_rail_on_reset": "True", "regenerate_schedule_on_reset": "True", "observation": "tree", "observation_config": {"max_depth": 2, "shortest_path_max_depth": 30}}, "model": {"fcnet_activation": "relu", "fcnet_hiddens": [256, 256], "vf_share_layers": "True"}}' 
+"""
+
+"""
+# Testing in flatland_random_sparse_small:
+python rollout.py /Users/flaurent/Sites/flatland/flatland-checkpoints/checkpoint_940/checkpoint-940 --run APEX --no-render --episodes 1000 --env 'flatland_random_sparse_small' --config '{"env_config": {"test": "true", "min_seed": 1002, "max_seed": 213783, "min_test_seed": 0, "max_test_seed": 100, "reset_env_freq": "1", "regenerate_rail_on_reset": "True", "regenerate_schedule_on_reset": "True", "observation": "tree", "observation_config": {"max_depth": 2, "shortest_path_max_depth": 30}}, "model": {"fcnet_activation": "relu", "fcnet_hiddens": [256, 256], "vf_share_layers": "True"}}' 
+
+# Testing in flatland_sparse:
+python rollout.py /Users/flaurent/Sites/flatland/flatland-checkpoints/checkpoint_940/checkpoint-940 --run APEX --no-render --episodes 1000 --env 'flatland_sparse' --config '{"env_config": {"test": "true", "generator": "sparse_rail_generator", "generator_config": "small_v0", "observation": "tree", "observation_config": {"max_depth": 2, "shortest_path_max_depth": 30}}, "model": {"fcnet_activation": "relu", "fcnet_hiddens": [256, 256], "vf_share_layers": "True"}}' 
 """
 
 # Register all necessary assets in tune registries
@@ -316,7 +324,8 @@ def rollout(agent,
         state_init = {p: m.get_initial_state() for p, m in policy_map.items()}
         use_lstm = {p: len(s) > 0 for p, s in state_init.items()}
         action_init = {
-            p: _flatten_action(m.action_space.sample())
+            #p: flatten_to_single_ndarray(m.action_space.sample()) # ray 0.8.5
+            p: _flatten_action(m.action_space.sample()) # ray 0.8.4
             for p, m in policy_map.items()
         }
     else:
@@ -380,7 +389,8 @@ def rollout(agent,
                             prev_action=prev_actions[agent_id],
                             prev_reward=prev_rewards[agent_id],
                             policy_id=policy_id)
-                    a_action = _flatten_action(a_action)  # tuple actions
+                    #a_action = flatten_to_single_ndarray(a_action)  # ray 0.8.5
+                    a_action = _flatten_action(a_action)  # tuple actions # ray 0.8.4
                     action_dict[agent_id] = a_action
                     prev_actions[agent_id] = a_action
             action = action_dict
